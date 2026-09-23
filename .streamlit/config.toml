@@ -1,0 +1,17 @@
+# sentence-transformers pulls in `transformers`; Streamlit's default file watcher
+# crawls that package and spams failed vision-model imports (torchvision missing).
+[server]
+fileWatcherType = "none"
+
+[runner]
+fastReruns = true
+
+[logger]
+level = "warning"
+
+[theme]
+primaryColor = "#6366F1"
+backgroundColor = "#F6F7FB"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#2C2A4A"
+font = "sans serif"
