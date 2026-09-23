@@ -1,4 +1,4 @@
-# Transcript Studio — European Robotic Surgery Interviews
+# Transcript Studio : European Robotic Surgery Interviews
 
 A local **Streamlit** app for analyzing three expert interview transcripts (France, Germany, UK). It answers a fixed **interview guide**, compares experts, and supports **free-form chat** — with answers grounded in the source text and **timestamped quotes** you can trust.
 
@@ -131,6 +131,8 @@ Think of two layers: **local search** (always) and **cloud LLM** (when you gener
 4. One more LLM call produces **agreements** and **disagreements** with expert names and timestamps tied to the grounded quotes.
 
 **Typical cost:** **1** synthesis call if Tab 1 already ran for that question; **4** calls total if not (3 + 1).
+
+<img width="1201" height="211" alt="image" src="https://github.com/user-attachments/assets/b2066b7c-fcd1-44c4-86da-9a739966798d" />
 
 ### Tab 3 — Chat
 
