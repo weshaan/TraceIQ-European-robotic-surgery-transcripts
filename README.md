@@ -45,7 +45,7 @@ Create a file named `.env` in the project root (never commit this file):
 OPENROUTER_API_KEY=your_key_here
 
 # Optional — pick any model from https://openrouter.ai/models
-# LLM_MODEL=google/gemma-4-31b-it
+# LLM_MODEL=openrouter/free
 
 # Optional tuning (see Configuration below)
 # LLM_MAX_TOKENS=8192
@@ -139,36 +139,7 @@ Think of two layers: **local search** (always) and **cloud LLM** (when you gener
 3. If nothing is relevant enough, it answers that the topic is **not covered** — without calling the LLM.
 4. Otherwise: **1 LLM call**, verified quotes, shown in the thread.
 
-Chat is **not** cached; each message is a new request.
-
----
-
-## Configuration
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `OPENROUTER_API_KEY` | For generation | Your OpenRouter key. |
-| `LLM_MODEL` | No | Model slug (default in code: `google/gemma-4-31b-it`). Example: `openrouter/free`. |
-| `OPENROUTER_MODEL` | No | Alternative to `LLM_MODEL` if unset. |
-| `LLM_MAX_TOKENS` | No | Max completion tokens (default `8192`). Raise if responses truncate. |
-| `LLM_REASONING_EFFORT` | No | For reasoning models: e.g. `low`, `medium`, `high`. |
-| `LLM_STRICT_JSON` | No | Set `true` to request strict JSON mode when the model supports it. |
-| `OPENROUTER_HTTP_REFERER` | No | Optional OpenRouter attribution header. |
-| `OPENROUTER_APP_TITLE` | No | Optional app title header (default `hasamex-transcript-app`). |
-
-Temperature is fixed low (**0.1**) in code for stable JSON.
-
----
-
-## Grounding and quote checks
-
-Three layers reduce hallucinations:
-
-1. **Retrieval-only context** — Prompts include only retrieved excerpts, not whole files.
-2. **Structured JSON** — Answers include `addressed`, `answer`, and `quotes` with timestamps.
-3. **Verification** — `verify.py` checks each quote is a **substring** of the matching segment (`CASE_SENSITIVE = False`). Failed quotes are dropped and flagged; per-expert QA may retry once.
-
-If excerpts do not support an answer, the app sets `addressed: false` instead of inventing content.
+Tab 1 and 2 use a cache. Tab 3 Chat is not cached; each message is a new request. 
 
 ---
 
@@ -195,8 +166,6 @@ hasamex-case/
 └── tests/                 # Parser, retrieval, verify, LLM config, integration
 ```
 
-**Generated locally (gitignored):** `.venv/`, `.env`, `.cache/chroma/`, `.pytest_cache/`.
-
 ---
 
 ## Logging and performance
@@ -205,37 +174,3 @@ hasamex-case/
 - **Embeddings:** Persisted under `.cache/chroma` so restarts skip re-encoding when data unchanged.
 - **Streamlit cache:** `@st.cache_resource` for the retriever; `@st.cache_data` for per-question QA and synthesis.
 
----
-
-## Troubleshooting
-
-| Issue | What to try |
-|-------|-------------|
-| **“API key missing”** | Add `OPENROUTER_API_KEY` to `.env` and restart Streamlit. |
-| **429 / rate limits** | Wait and retry, pick another `LLM_MODEL`, or add OpenRouter credits. |
-| **Empty or truncated JSON** | Increase `LLM_MAX_TOKENS`; for reasoning models try `LLM_REASONING_EFFORT=low`. |
-| **`torchvision` errors in terminal** | Harmless noise from Streamlit’s file watcher scanning `transformers`. This repo disables that in `.streamlit/config.toml` — **restart** Streamlit after pull. |
-| **Slow first load** | First time: download embedding model + build Chroma index. Later loads use cache. |
-
----
-
-## Scaling beyond three transcripts
-
-The current design is a case-study slice. To grow to many files:
-
-- Keep **metadata filters** (`expert_name`, `market`, file id) on every search.
-- Use **persistent** Chroma (or another vector DB) and optional **chunking** for long calls.
-- Cache **per-(expert, question)** LLM JSON on disk and invalidate when source segments change.
-
----
-
-## Data and privacy
-
-- Transcripts in `Files/` are the case inputs; treat them according to your project’s confidentiality rules.
-- **Do not** commit `.env` or API keys to GitHub.
-
----
-
-## License
-
-Add a license file here if you publish the repo (e.g. MIT, or “case study — not for redistribution” per your employer’s rules).
